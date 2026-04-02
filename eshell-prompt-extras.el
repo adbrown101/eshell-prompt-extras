@@ -426,7 +426,7 @@ returns a string."
   (let ((branch (car (vc-git-branches))))
     (cond
      ((null branch) "no-branch")
-     ((string-match "^(HEAD detached at \\(.+\\))$" branch)
+     ((string-match "^(HEAD detached at\\|from \\(.+\\))$" branch)
       (concat epe-git-detached-HEAD-char (match-string 1 branch)))
      (t branch))))
 
