@@ -408,7 +408,13 @@ returns a string."
   "If you installed git and in a git project."
   (unless (epe-remote-p)                ; Work-around for issue #20
     (and (eshell-search-path "git")
-         (vc-find-root (eshell/pwd) ".git"))))
+      (vc-find-root (eshell/pwd) ".git"))))
+
+(defun epe-jj-p ()
+  "If you installed jj and in a git project."
+  (unless (epe-remote-p)                ; Work-around for issue #20
+    (and (eshell-search-path "jj")
+      (vc-find-root (eshell/pwd) ".jj"))))
 
 (defun epe-git-short-sha1 ()
   "Return the short sha1 of your git commit."
@@ -429,6 +435,13 @@ returns a string."
      ((string-match "^(HEAD detached at\\|from \\(.+\\))$" branch)
       (concat epe-git-detached-HEAD-char (match-string 1 branch)))
      (t branch))))
+
+(defun epe-jj-branch ()
+  "Return your jj working copy change id"
+  (let ((branch (split-string (shell-command-to-string "jj log -r @:: -G -T builtin_log_oneline") "\n")))
+    (let ((copy (car (last branch 2))))
+      (if (string-match "^\\([0-9a-z]\\{8\\}\\) .*$" copy)
+        (concat "@:" (match-string 1 copy)) (nth 0 branch)))))
 
 (defun epe-git-tag (&optional rev with-distance)
   ;; Inspired by `magit-get-current-tag'.
@@ -712,9 +725,11 @@ The status is displayed on the last line."
    " "))
 
 (defun epe-git-prompt-info ()
-  (if epe-show-git-status-extended
+  (if (epe-jj-p)
+    (epe-jj-branch)
+    (if epe-show-git-status-extended
       (epe-git-extended-info)
-    (epe-git-default-info)))
+      (epe-git-default-info))))
 
 (defun epe-git-default-info ()
   "Default git information (epe prompt backwards compatibility)"
